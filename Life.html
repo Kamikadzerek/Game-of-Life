@@ -1,0 +1,153 @@
+<html>
+<head>
+	<style type="text/css">
+			body{
+				margin: 0;
+				padding: 0;
+				overflow: hidden;
+				background-color: black;
+			}
+			canvas{
+				position: absolute;
+				top:0;
+				left:0;
+			}
+		</style>
+</head>
+<body style=" background: black;">
+    <script type="text/javascript" language="javascript">
+
+window.onload = function(){
+	Game.init();
+};
+VAR = {
+	fps:2,
+	W:0,
+	H:0,
+	lastTime:0,
+	boardSize:20,
+	boardX:20,
+	boardY:20,
+	clickX:0,
+	clickY:0,
+	Cells:[]
+}
+
+Game = {
+	init:function(){
+		Game.canvas = document.createElement('canvas');
+		Game.ctx = Game.canvas.getContext('2d');
+		Game.layout();
+
+
+		window.addEventListener('resize', Game.layout, false)
+		window.addEventListener('keydown', Game.onKey, false);
+		window.addEventListener('keydup', Game.onKey, false);
+		window.addEventListener('mousedown', Game.onKey, false);
+		document.body.appendChild(Game.canvas);
+		Game.generateCells(VAR.boardX,VAR.boardY,VAR.boardSize)
+		
+		Game.drawBoard()
+		;
+	},
+	onKey:function(ev){
+		if (ev.button==0){
+			VAR.clickX = ev.clientX;
+			VAR.clickY = ev.clientY;
+			
+			for (var i = VAR.Cells.length - 1; i >= 0; i--) {
+				if(VAR.clickX>VAR.Cells[i].x && VAR.clickX<VAR.Cells[i].x+VAR.boardSize && VAR.clickY>VAR.Cells[i].y && VAR.clickY<VAR.Cells[i].y+VAR.boardSize){
+					VAR.Cells[i].status = !VAR.Cells[i].status
+					console.log(i)
+					Game.ctx.fillRect(VAR.Cells[i].x, VAR.Cells[i].y, VAR.boardSize, VAR.boardSize);
+				}
+			}
+
+		}else if(ev.button==2){Game.animationLoop()}
+
+		
+
+	},
+	layout:function(ev){
+		VAR.W = window.innerWidth
+		VAR.H = window.innerHeight
+		VAR.d = Math.min(VAR.W, VAR.H);
+		Game.canvas.width = VAR.W;
+		Game.canvas.height = VAR.H;
+		Game.ctx.fillStyle = 'white'
+		Game.ctx.strokeStyle = 'white'
+		Game.ctx.lineWidth = 1
+		Game.ctx.lineJoin = 'round'
+	},
+	animationLoop:function(time){
+		requestAnimationFrame ( Game.animationLoop)
+		if (time - VAR.lastTime>=1000/VAR.fps){
+			VAR.lastTime = time;
+			
+			Game.ctx.clearRect(0,0,VAR.W,VAR.H)
+			Game.life()
+			Game.drawBoard()
+			
+			
+			
+
+		}
+	},
+	generateCells:function(x, y, size){
+		for (var i = x - 1; i >= 0; i--) {
+			for (var j = y - 1; j >= 0; j--) {
+				VAR.Cells.push(new Cell(i*size, j*size, false))
+			}
+		}
+	},
+	drawBoard:function(){
+		for (var i = VAR.Cells.length - 1; i >= 0; i--) {
+			if (VAR.Cells[i].status){
+				
+				Game.ctx.strokeStyle = 'white';
+				Game.ctx.fillRect(VAR.Cells[i].x, VAR.Cells[i].y, VAR.boardSize, VAR.boardSize);
+				Game.ctx.stroke();
+			}else{
+				Game.ctx.strokeStyle = 'white';
+				Game.ctx.rect(VAR.Cells[i].x, VAR.Cells[i].y, VAR.boardSize, VAR.boardSize);
+				Game.ctx.stroke();
+			}				
+			}
+
+
+	},
+	life:function(){
+		newCells = []
+		for (var i = 0; i <= VAR.Cells.length - 1; i++) {
+			
+			
+
+			newCells[i]=_.clone(VAR.Cells[i]);
+			VAR.Cells[i].lifeneig = 0;
+			if(VAR.Cells[i+1]){if (VAR.Cells[i+1].status){VAR.Cells[i].lifeneig++}}
+			if(VAR.Cells[i-1]){if (VAR.Cells[i-1].status){VAR.Cells[i].lifeneig++}}
+			if(VAR.Cells[i+VAR.boardY]){if (VAR.Cells[i+VAR.boardY].status){VAR.Cells[i].lifeneig++}}
+			if(VAR.Cells[i-VAR.boardY]){if (VAR.Cells[i-VAR.boardY].status){VAR.Cells[i].lifeneig++}}
+			if(VAR.Cells[i+VAR.boardY+1]){if (VAR.Cells[i+VAR.boardY+1].status){VAR.Cells[i].lifeneig++}}
+			if(VAR.Cells[i-VAR.boardY-1]){if (VAR.Cells[i-VAR.boardY-1].status){VAR.Cells[i].lifeneig++}}
+			if(VAR.Cells[i+VAR.boardY-1]){if (VAR.Cells[i+VAR.boardY-1].status){VAR.Cells[i].lifeneig++}}
+			if(VAR.Cells[i-VAR.boardY+1]){if (VAR.Cells[i-VAR.boardY+1].status){VAR.Cells[i].lifeneig++}}			
+			
+			
+			
+			if (VAR.Cells[i].status && (VAR.Cells[i].lifeneig == 2 || newCells[i].lifeneig ==3)){newCells[i].status=true
+			}else if(!VAR.Cells[i].status && VAR.Cells[i].lifeneig == 3){newCells[i].status = true
+			}else{newCells[i].status = false}
+			
+
+		}
+		VAR.Cells = _.clone(newCells);
+	}
+}		
+
+    </script>
+    <script src="js/cell.js"></script>
+    <script src="js/underscore-min.js"></script>
+    
+</body>
+</html>
